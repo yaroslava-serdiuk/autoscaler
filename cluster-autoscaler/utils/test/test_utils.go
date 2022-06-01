@@ -137,6 +137,42 @@ func BuildTestNode(name string, millicpu int64, mem int64) *apiv1.Node {
 	return node
 }
 
+// BuildTestNodeWithEphemeralStorage creates a node with specified capacity.
+func BuildTestNodeWithEphemeralStorage(name string, millicpu int64, mem int64, eph int64) *apiv1.Node {
+	node := &apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:     name,
+			SelfLink: fmt.Sprintf("/api/v1/nodes/%s", name),
+			Labels:   map[string]string{},
+		},
+		Spec: apiv1.NodeSpec{
+			ProviderID: name,
+		},
+		Status: apiv1.NodeStatus{
+			Capacity: apiv1.ResourceList{
+				apiv1.ResourcePods: *resource.NewQuantity(100, resource.DecimalSI),
+			},
+		},
+	}
+
+	if millicpu >= 0 {
+		node.Status.Capacity[apiv1.ResourceCPU] = *resource.NewMilliQuantity(millicpu, resource.DecimalSI)
+	}
+	if mem >= 0 {
+		node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(mem, resource.DecimalSI)
+	}
+	if eph >= 0 {
+		node.Status.Capacity[apiv1.ResourceEphemeralStorage] = *resource.NewQuantity(eph, resource.DecimalSI)
+	}
+
+	node.Status.Allocatable = apiv1.ResourceList{}
+	for k, v := range node.Status.Capacity {
+		node.Status.Allocatable[k] = v
+	}
+
+	return node
+}
+
 // AddGpusToNode adds GPU capacity to given node. Default accelerator type is used.
 func AddGpusToNode(node *apiv1.Node, gpusCount int64) {
 	node.Spec.Taints = append(
