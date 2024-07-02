@@ -98,13 +98,13 @@ func TestProvisioningRequestForPods(t *testing.T) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			pr, err := ProvisioningRequestForPods(client, tc.pods)
+			prs, err := ProvisioningRequestsForPods(client, tc.pods)
 			if tc.err {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
-				assert.Equal(t, pr, tc.pr)
-				assert.Equal(t, pr.Spec.ProvisioningClassName, tc.className)
+				assert.Equal(t, prs[0], tc.pr)
+				assert.Equal(t, prs[0].Spec.ProvisioningClassName, tc.className)
 			}
 		})
 	}
